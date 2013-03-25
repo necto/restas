@@ -58,6 +58,9 @@
 (defun find-route (route-symbol &optional (module *module*))
   (module-find-route module route-symbol))
 
+(defun find-submodule (module-symbol &optional (module *module*))
+  (gethash module-symbol (slot-value module 'restas::children)))
+
 (defun apply-decorators (route decorators)
   (if decorators
       (funcall (car decorators) (apply-decorators route (cdr decorators)))

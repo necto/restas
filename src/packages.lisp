@@ -34,6 +34,7 @@
            #:initialize-module-instance
            #:finalize-module-instance
            #:mount-module
+           #:find-submodule
            
            ;; render
            #:render-object
