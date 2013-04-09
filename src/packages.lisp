@@ -49,6 +49,7 @@
            #:context-symbol-value
            #:with-context
            #:copy-restas-context
+           #:ensure-native-context
            
            ;; service
            #:start

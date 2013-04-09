@@ -85,5 +85,12 @@
     `(let ((,cntx ,context))
        (progv (context-all-vars ,cntx) (context-all-values ,cntx)
          ,@body))))
+
+(defmacro ensure-native-context ()
+  `(unless (eq (find-package (slot-value restas::*module* 'restas::package))
+               ,*package*)
+     (error "The function must be called from it's native module(~a, not ~a)."
+            ,*package*
+            (slot-value restas::*module* 'restas::package))))
            
 
