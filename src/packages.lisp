@@ -34,7 +34,9 @@
            #:initialize-module-instance
            #:finalize-module-instance
            #:mount-module
-           #:find-submodule
+           #:assert-native-module
+           #:in-submodule
+           #:in-ancestor-module
            
            ;; render
            #:render-object
@@ -49,7 +51,6 @@
            #:context-symbol-value
            #:with-context
            #:copy-restas-context
-           #:ensure-native-context
            
            ;; service
            #:start
