@@ -58,6 +58,32 @@
 (defun find-route (route-symbol &optional (module *module*))
   (module-find-route module route-symbol))
 
+(defun find-submodule (module-symbol &optional (module *module*))
+  (gethash module-symbol (slot-value module 'restas::children)))
+
+(defun find-appr-supermodule-for-package (module pkg)
+  (if (eq (find-package (slot-value module 'package)) pkg)
+      module
+      (let ((parent (slot-value module 'parent)))
+        (when parent
+          (find-appr-supermodule-for-package parent pkg)))))
+
+(defmacro in-ancestor-module (&body body)
+  `(with-module (restas::find-appr-supermodule-for-package
+                 restas::*module* ,*package*)
+     ,@ body))
+
+(defmacro in-submodule (module-symbol &body body)
+  `(with-module (find-submodule ,module-symbol)
+     ,@body))
+
+(defmacro assert-native-module ()
+  `(unless (eq (find-package (slot-value restas::*module* 'restas::package))
+               ,*package*)
+     (error "The function must be called from it's native module(~a, not ~a)."
+            ,*package*
+            (slot-value restas::*module* 'restas::package))))
+
 (defun apply-decorators (route decorators)
   (if decorators
       (funcall (car decorators) (apply-decorators route (cdr decorators)))

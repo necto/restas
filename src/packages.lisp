@@ -34,6 +34,9 @@
            #:initialize-module-instance
            #:finalize-module-instance
            #:mount-module
+           #:assert-native-module
+           #:in-submodule
+           #:in-ancestor-module
            
            ;; render
            #:render-object
