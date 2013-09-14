@@ -70,7 +70,8 @@
      ,@body))
 
 (defmacro assert-native-module ()
-  `(unless (eq (find-package (slot-value (restas::route-module restas::*route*)
+  `(unless (eq (find-package (slot-value (or restas::*module*
+                                             (restas::route-module restas::*route*))
                                          'restas::package))
                ,*package*)
      (error "The function must be called from it's native module(~a, not ~a)."
