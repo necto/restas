@@ -36,6 +36,9 @@
 (defgeneric module-find-route (module route-symbol)
   (:documentation "Find the route in the MODULE"))
 
+(defgeneric module-find-child-module (module module-symbol)
+  (:documentation "Find the mounted module in the MODULE"))
+
 (defmacro with-module-context (module &body body)
   `(with-context (module-context ,module)
      ,@body))
@@ -58,15 +61,15 @@
 (defun find-route (route-symbol &optional (module *module*))
   (module-find-route module route-symbol))
 
-(defun find-submodule (module-symbol module)
-  (gethash module-symbol (slot-value module 'restas::children)))
+(defun find-mounted-module (module-symbol &optional (module *module*))
+  (module-find-child-module module module-symbol))
 
 (defmacro in-ancestor-module (&body body)
   `(with-module (restas::module-parent (restas::route-module restas::*route*))
      ,@body))
 
 (defmacro in-submodule (module-symbol &body body)
-  `(with-module (find-submodule ,module-symbol (restas::route-module restas::*route*))
+  `(with-module (find-mounted-module ,module-symbol (restas::route-module restas::*route*))
      ,@body))
 
 (defmacro assert-native-module ()
@@ -227,6 +230,9 @@
     (or (gethash route-symbol routes)
         (and parent (module-find-route parent route-symbol)))))
 
+(defmethod module-find-child-module ((module pkgmodule) module-symbol)
+  (gethash module-symbol (slot-value module 'children)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; define-module
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -238,8 +244,8 @@
             (:render-method
              (collect :render-method into pkgtraits)
              (collect `(alexandria:named-lambda make-render-method () ,(second option)) into pkgtraits))
-            (:export-route-symbols
-             (collect :export-route-symbols into pkgtraits)
+            ((:export-route-symbols :content-type)
+             (collect (first option) into pkgtraits)
              (collect (second option) into pkgtraits))
             (otherwise
              (collect option into pkgoptions)))

@@ -114,11 +114,17 @@
          (reconnect-all-routes)))))
 
 (defun route-template-from-symbol (symbol module)
-  (let ((traits (gethash symbol (pkgmodule-traits-routes (symbol-package symbol)))))
-    (concatenate 'list
-                 (module-real-url module)
-                 (routes:parse-template (gethash :template traits) 
-                                        (gethash :parse-vars traits)))))
+  (flet ((call-in-context-wrap (fun)
+           (alexandria:named-lambda parse-in-context (value)
+             (with-module module
+               (funcall fun value)))))
+    (let ((traits (gethash symbol (pkgmodule-traits-routes (symbol-package symbol)))))
+      (concatenate 'list
+                   (module-real-url module)
+                   (routes:parse-template (gethash :template traits) 
+                                          (iter (for tail on (gethash :parse-vars traits) by #'cddr)
+                                                (collect (first tail))
+                                                (collect (call-in-context-wrap (second tail)))))))))
 
 (defun create-route-from-symbol (symbol module)
   (destructuring-bind (&key content-type headers method requirement render-method decorators
@@ -220,19 +226,17 @@
 ;;; parse url for route
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; (defun parse-route-url (url route-symbol &optional module-symbol)
-;;   (let ((mapper (make-instance 'routes:mapper))
-;;         (module (if module-symbol
-;;                        (find-module  module-symbol)
-;;                        *module*)))
-;;     (routes:connect mapper
-;;                     (make-instance 'route
-;;                                    :template (route-template-from-symbol route-symbol
-;;                                                                          module)
-;;                                    :module module))
-;;     (multiple-value-bind (route bindings) (routes:match mapper url)
-;;       (if route
-;;           (alexandria:alist-plist bindings)))))
+(defun parse-route-url (url route-symbol)
+  (let ((mapper (make-instance 'routes:mapper))
+        (module *module*))
+    (routes:connect mapper
+                    (make-instance 'route
+                                   :template (routes:route-template (module-find-route module route-symbol))
+                                   ;;(route-template-from-symbol route-symbol module)
+                                   :module module))
+    (multiple-value-bind (route bindings) (routes:match mapper url)
+      (if route
+          (alexandria:alist-plist bindings)))))
   
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

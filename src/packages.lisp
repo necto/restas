@@ -24,7 +24,7 @@
            #:genurl
            #:genurl*
            #:redirect
-           ;;#:parse-route-url
+           #:parse-route-url
            #:abort-route-handler
 
            #:process-route
@@ -37,6 +37,9 @@
            #:assert-native-module
            #:in-submodule
            #:in-ancestor-module
+           #:find-mounted-module
+           #:with-module
+           #:module-context
            
            ;; render
            #:render-object
