@@ -64,12 +64,17 @@
 (defun find-mounted-module (module-symbol &optional (module *module*))
   (module-find-child-module module module-symbol))
 
+(defun current-module ()
+  (if *route*
+      (route-module *route*)
+      *module*))
+
 (defmacro in-ancestor-module (&body body)
-  `(with-module (restas::module-parent (restas::route-module restas::*route*))
+  `(with-module (restas::module-parent (restas::current-module))
      ,@body))
 
 (defmacro in-submodule (module-symbol &body body)
-  `(with-module (find-mounted-module ,module-symbol (restas::route-module restas::*route*))
+  `(with-module (find-mounted-module ,module-symbol (restas::current-module))
      ,@body))
 
 (defmacro assert-native-module ()
